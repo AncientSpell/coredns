@@ -38,7 +38,7 @@ func (c *Cache) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) 
 		ttl = i.ttl(now)
 	}
 	if i == nil {
-		if !do {
+		if do {
 			setDo(r)
 		}
 		crr := &ResponseWriter{ResponseWriter: w, Cache: c, state: state, server: server}
@@ -50,7 +50,7 @@ func (c *Cache) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) 
 		now = now.Add(time.Duration(ttl) * time.Second)
 		go func() {
 			r := r.Copy()
-			if !do {
+			if do {
 				setDo(r)
 			}
 			crr := &ResponseWriter{Cache: c, state: state, server: server, prefetch: true, remoteAddr: w.LocalAddr()}

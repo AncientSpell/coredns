@@ -2,6 +2,7 @@
 package cache
 
 import (
+	"fmt"
 	"hash/fnv"
 	"net"
 	"time"
@@ -183,6 +184,7 @@ func (w *ResponseWriter) WriteMsg(res *dns.Msg) error {
 	resc.Answer = filterRRSlice(resc.Answer, ttl, do, false)
 	resc.Ns = filterRRSlice(resc.Ns, ttl, do, false)
 	resc.Extra = filterRRSlice(resc.Extra, ttl, do, false)
+	fmt.Printf("%s\n", resc)
 
 	return w.ResponseWriter.WriteMsg(resc)
 }
