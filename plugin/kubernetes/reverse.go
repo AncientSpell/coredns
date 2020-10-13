@@ -8,6 +8,7 @@ import (
 	"github.com/coredns/coredns/plugin/etcd/msg"
 	"github.com/coredns/coredns/plugin/pkg/dnsutil"
 	"github.com/coredns/coredns/request"
+	api "k8s.io/api/core/v1"
 )
 
 // Reverse implements the ServiceBackend interface.
@@ -46,7 +47,14 @@ func (k *Kubernetes) serviceRecordForIP(ip, name string) []msg.Service {
 		for _, eps := range ep.Subsets {
 			for _, addr := range eps.Addresses {
 				if addr.IP == ip {
+					// Return only headless record when one service is headless
+					svcIdx := ep.Name + "." + ep.Namespace
 					domain := strings.Join([]string{endpointHostname(addr, k.endpointNameMode), ep.Name, ep.Namespace, Svc, k.primaryZone()}, ".")
+					for _, svc := range k.APIConn.SvcIndex(svcIdx) {
+						if svc.ClusterIP == api.ClusterIPNone {
+							return []msg.Service{msg.Service{Host: domain, TTL: k.ttl}}
+						}
+					}
 					svcs = append(svcs, msg.Service{Host: domain, TTL: k.ttl})
 				}
 			}
